@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Protoc.Gateway.Internal;
 
+using System.Collections.Immutable;
 using System.Reflection;
 
 using Type = System.Type;
@@ -15,7 +17,11 @@ public static class GrpcClientMapper
 {
     public static IServiceCollection AddGrpcClients(this WebApplicationBuilder builder, params Assembly[] assemblies)
     {
-        AssemblyParser implementationInstance = new(assemblies.SelectMany(a => a.GetTypes()));
+        ImmutableArray<Type> assembyTypes = assemblies
+            .SelectMany(a => a.GetTypes())
+            .ToImmutableArray();
+        
+        AssemblyParser implementationInstance = new(assembyTypes);
 
         builder.Services.AddSingleton<IAssemblyParser>(implementationInstance);
         builder.Services.AddSingleton<IMessageBuilder, MessageBuilder>();

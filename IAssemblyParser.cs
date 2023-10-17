@@ -6,15 +6,15 @@ namespace Protoc.Gateway;
 
 public interface IAssemblyParser
 {
-    IEnumerable<Type> GrpcTypes { get; }
-
-    IEnumerable<Type> GrpcClientTypes { get; }
-
     Methods GetHttpMethods(MethodInfo methodInfo, out string methodName);
 
-    IEnumerable<string> GetResources(MethodInfo methodInfo, out string methodName);
+    IReadOnlyCollection<Type> GrpcTypes { get; }
 
-    IEnumerable<MethodInfo> GetGrpcMethods(Type clientType);
+    IReadOnlyCollection<Type> GrpcClientTypes { get; }
+
+    IReadOnlyCollection<string> GetResources(MethodInfo methodInfo, out string methodName);
+
+    IReadOnlyCollection<MethodInfo> GetGrpcMethods(Type clientType);
 
     FileDescriptor? GetServiceFile(Type serviceType);
 }
