@@ -77,7 +77,7 @@ public static class XmlDocsGetter
             if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.Name == "member")
             {
                 string? key = xmlReader["name"];
-                if (key != null)
+                if (key is not null)
                 {
                     s_loadedXmlDocumentation[key] = xmlReader.ReadInnerXml();
                 }

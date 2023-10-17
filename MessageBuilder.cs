@@ -18,7 +18,7 @@ public class MessageBuilder : IMessageBuilder
 {
     private readonly JsonSerializerSettings _settings;
 
-    public MessageBuilder() => _settings = JsonConvert.DefaultSettings != null ? JsonConvert.DefaultSettings() : new JsonSerializerSettings();
+    public MessageBuilder() => _settings = JsonConvert.DefaultSettings is not null ? JsonConvert.DefaultSettings() : new JsonSerializerSettings();
 
     public string MessageToJson(object? message) => JsonConvert.SerializeObject(message);
 
@@ -94,7 +94,7 @@ public class MessageBuilder : IMessageBuilder
                     {
                         object? value = property.GetValue(message);
 
-                        if (value == null)
+                        if (value is null)
                         {
                             value = Activator.CreateInstance(property.PropertyType)
                                 ?? throw new InvalidOperationException(property.PropertyType.FullName);

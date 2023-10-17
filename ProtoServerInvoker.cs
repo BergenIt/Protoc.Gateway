@@ -63,7 +63,7 @@ public class ProtoServerInvoker
             foreach (KeyValuePair<string, StringValues> header in httpContext.Request.Headers)
             {
                 string? text = (string?)header.Value;
-                if (text != null)
+                if (text is not null)
                 {
                     callOptions.Headers?.Add(header.Key, text);
                 }
@@ -71,7 +71,7 @@ public class ProtoServerInvoker
 
             Type? parameterType = _methodInfo.GetParameters()[0].ParameterType;
             Type? type = _methodInfo.ReturnParameter.ParameterType.GetProperty("ResponseStream")?.PropertyType.GetProperty("Current")?.PropertyType;
-            if (type == null)
+            if (type is null)
             {
                 await UnaryCallHandle(httpContext, await _messageBuilder.BuildMessage(parameterType, httpContext), _methodInfo.ReturnParameter.ParameterType);
                 return;
@@ -135,7 +135,7 @@ public class ProtoServerInvoker
         {
             httpContext.Response.Headers.ContentType = "application/file";
 
-            if (headerResponse != null)
+            if (headerResponse is not null)
             {
                 foreach (Metadata.Entry entry in headerResponse)
                 {
@@ -201,7 +201,7 @@ public class ProtoServerInvoker
         {
             string? text = (string?)header.Value;
 
-            if (text != null)
+            if (text is not null)
             {
                 callOptions.Headers?.Add(header.Key, text);
             }

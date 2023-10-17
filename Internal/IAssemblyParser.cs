@@ -2,9 +2,9 @@
 
 using System.Reflection;
 
-namespace Protoc.Gateway;
+namespace Protoc.Gateway.Internal;
 
-public interface IAssemblyParser
+internal interface IAssemblyParser
 {
     Methods GetHttpMethods(MethodInfo methodInfo, out string methodName);
 

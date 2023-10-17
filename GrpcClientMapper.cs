@@ -57,7 +57,7 @@ public static class GrpcClientMapper
 
             httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
             {
-                ServerCertificateCustomValidationCallback = (r, c, ch, e) => ch != null && !ch.ChainStatus.Any()
+                ServerCertificateCustomValidationCallback = (r, c, ch, e) => ch is not null && !ch.ChainStatus.Any()
             });
         }
 

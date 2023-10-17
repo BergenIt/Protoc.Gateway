@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Protoc.Gateway.Internal;
 
 namespace Protoc.Gateway;
 
@@ -21,7 +22,7 @@ public static class SwaggerAdder
       Action<SwaggerGenOptions>? setupAction = null)
     {
         Func<JsonSerializerSettings>? defaultSettings = JsonConvert.DefaultSettings;
-        JsonSerializerSettings overSettings = (defaultSettings != null ? defaultSettings() : null) ?? new JsonSerializerSettings();
+        JsonSerializerSettings overSettings = (defaultSettings is not null ? defaultSettings() : null) ?? new JsonSerializerSettings();
         JsonConvert.DefaultSettings = () =>
         {
             overSettings.ContractResolver = new ProtobufTimeResolver();
@@ -78,7 +79,7 @@ public static class SwaggerAdder
             });
             a.SchemaGeneratorOptions.SchemaIdSelector = t => t.FullName;
             a.DocumentFilter<ClientDocumentFilter>();
-            if (setupAction == null)
+            if (setupAction is null)
             {
                 return;
             }

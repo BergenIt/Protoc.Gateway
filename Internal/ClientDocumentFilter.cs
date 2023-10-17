@@ -10,9 +10,9 @@ using Type = System.Type;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Protoc.Gateway;
+namespace Protoc.Gateway.Internal;
 
-public class ClientDocumentFilter : IDocumentFilter
+internal class ClientDocumentFilter : IDocumentFilter
 {
     private readonly IAssemblyParser _assemblyParser;
     private readonly IConfiguration _configuration;
@@ -31,11 +31,13 @@ public class ClientDocumentFilter : IDocumentFilter
         {
             context.SchemaGenerator.GenerateSchema(modelType, context.SchemaRepository);
 
-            context.SchemaRepository.AddDefinition(
-                typeof(ICollection<>).MakeGenericType(modelType).FullName,
-                context.SchemaGenerator.GenerateSchema(
-                    typeof(ICollection<>).MakeGenericType(modelType),
-                    context.SchemaRepository));
+            string schemaId = typeof(ICollection<>).MakeGenericType(modelType).FullName!;
+
+            OpenApiSchema schema = context.SchemaGenerator.GenerateSchema(
+                typeof(ICollection<>).MakeGenericType(modelType),
+                context.SchemaRepository);
+
+            context.SchemaRepository.AddDefinition(schemaId, schema);
         }
 
         foreach (KeyValuePair<string, OpenApiSchema> schema in context.SchemaRepository.Schemas)
@@ -45,8 +47,11 @@ public class ClientDocumentFilter : IDocumentFilter
 
         foreach (Type grpcClientType in _assemblyParser.GrpcClientTypes)
         {
-            IEnumerable<MethodInfo> grpcMethods = _assemblyParser.GetGrpcMethods(grpcClientType);
-            string service = grpcClientType.DeclaringType?.Name ?? throw new InvalidOperationException(grpcClientType.Name);
+            IReadOnlyCollection<MethodInfo> grpcMethods = _assemblyParser.GetGrpcMethods(grpcClientType);
+            
+            string service = grpcClientType.DeclaringType?.Name 
+                ?? throw new InvalidOperationException(grpcClientType.Name);
+            
             string clientComment = grpcClientType.GetClientComment();
 
             FileDescriptor? serviceFile = _assemblyParser.GetServiceFile(grpcClientType.DeclaringType);
@@ -64,9 +69,14 @@ public class ClientDocumentFilter : IDocumentFilter
 
             foreach (MethodInfo methodInfo in grpcMethods)
             {
-                GenerateOperation(methodInfo, context.SchemaRepository, service, out string endpoint, out OpenApiPathItem? openApiPathItem);
+                GenerateOperation(
+                    methodInfo,
+                    context.SchemaRepository,
+                    service,
+                    out string endpoint,
+                    out OpenApiPathItem? openApiPathItem);
 
-                if (openApiPathItem != null)
+                if (openApiPathItem is not null)
                 {
                     swaggerDoc.Paths.Add(endpoint, openApiPathItem);
                 }
@@ -84,35 +94,33 @@ public class ClientDocumentFilter : IDocumentFilter
         Methods httpMethods = _assemblyParser.GetHttpMethods(methodInfo, out string methodName);
         endpoint = "/protobuf/" + service + "/" + methodName;
 
-        Type parameterType1 = methodInfo.ReturnParameter.ParameterType;
-        Type? propertyType = parameterType1.GetProperty("ResponseStream")?.PropertyType.GetProperty("Current")?.PropertyType;
-        Type? messageType = parameterType1.GetProperty("ResponseAsync")?.PropertyType.GetProperty("Result")?.PropertyType;
+        Type? streamCurrent = methodInfo.ReturnParameter.ParameterType.GetProperty("ResponseStream")?.PropertyType.GetProperty("Current")?.PropertyType;
+        Type? responseResult = methodInfo.ReturnParameter.ParameterType.GetProperty("ResponseAsync")?.PropertyType.GetProperty("Result")?.PropertyType;
 
-        messageType ??= propertyType ?? throw new InvalidOperationException(methodInfo.Name);
+        responseResult ??= streamCurrent ?? throw new InvalidOperationException(methodInfo.Name);
 
-        string[] source = methodInfo.GetMethodComment().Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        string[] sourceCommentLines = methodInfo
+            .GetMethodComment()
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
         OpenApiOperation operation = new()
         {
-            Description = source.Skip(1).FirstOrDefault() ?? string.Empty,
-            Summary = source.FirstOrDefault() ?? string.Empty
+            Description = sourceCommentLines.Skip(1).FirstOrDefault() ?? string.Empty,
+            Summary = sourceCommentLines.FirstOrDefault() ?? string.Empty
         };
 
-        operation.Responses.Add("200", GetOpenApiResponse(messageType, repository));
-        operation.Tags.Add(new OpenApiTag()
-        {
-            Name = service
-        });
+        operation.Responses.Add("200", GetOpenApiResponse(responseResult, repository));
+        operation.Tags.Add(new() { Name = service });
 
-        if (httpMethods == Methods.Get || httpMethods == Methods.File)
+        if (httpMethods is Methods.Get or Methods.File)
         {
             Type methodParameterType = methodInfo.GetParameters()[0].ParameterType;
 
             if (methodParameterType == typeof(Metadata))
             {
-                operation.Parameters = QuerySchemaParser.GetRequestQuerySchema(
-                    typeof(ICollection<>).MakeGenericType(methodInfo.ReturnType.GenericTypeArguments[0]),
-                    repository);
+                Type contractType = typeof(ICollection<>).MakeGenericType(methodInfo.ReturnType.GenericTypeArguments[0]);
+
+                operation.Parameters = QuerySchemaParser.GetRequestQuerySchema(contractType, repository);
             }
             else
             {
@@ -122,8 +130,7 @@ public class ClientDocumentFilter : IDocumentFilter
         else
         {
             OpenApiRequestBody? openApiRequestBody = GetOpenApiRequestBody(methodInfo, repository);
-
-            if (openApiRequestBody == null)
+            if (openApiRequestBody is null)
             {
                 openApiPathItem = null;
                 return;
@@ -137,7 +144,9 @@ public class ClientDocumentFilter : IDocumentFilter
             Operations =
             {
                 {
-                    httpMethods == Methods.File ? OperationType.Get : System.Enum.Parse<OperationType>(httpMethods.ToString()),
+                    httpMethods == Methods.File 
+                        ? OperationType.Get 
+                        : System.Enum.Parse<OperationType>(httpMethods.ToString()),
                     operation
                 }
             }
@@ -161,9 +170,7 @@ public class ClientDocumentFilter : IDocumentFilter
         return openApiResponse;
     }
 
-    private static OpenApiRequestBody? GetOpenApiRequestBody(
-      MethodInfo method,
-      SchemaRepository repository)
+    private static OpenApiRequestBody? GetOpenApiRequestBody(MethodInfo method, SchemaRepository repository)
     {
         TypeInfo parameterType = (TypeInfo)method.GetParameters()[0].ParameterType;
 

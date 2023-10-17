@@ -26,7 +26,7 @@ public class QuerySchemaParser
       string comment,
       string? parentProppertyName = null)
     {
-        if (openApiSchema.Type == "array" && openApiSchema.Items?.Reference != null)
+        if (openApiSchema.Type == "array" && openApiSchema.Items?.Reference is not null)
         {
             if (!repository.Schemas.TryGetValue(openApiSchema.Items.Reference.Id, out _))
             {
@@ -57,9 +57,9 @@ public class QuerySchemaParser
                     str3 = "." + str3;
                 }
 
-                if (property1.Value.Type != null || repository.Schemas.TryGetValue(property1.Value.Reference.Id, out _))
+                if (property1.Value.Type is not null || repository.Schemas.TryGetValue(property1.Value.Reference.Id, out _))
                 {
-                    if (property1.Value.Type == "Array".ToLowerInvariant() && property1.Value.Items?.Reference != null)
+                    if (property1.Value.Type == "Array".ToLowerInvariant() && property1.Value.Items?.Reference is not null)
                     {
                         if (repository.Schemas.TryGetValue(property1.Value.Items.Reference.Id, out _))
                         {
