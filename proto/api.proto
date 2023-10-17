@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option go_package = "gen/license";
+
+option csharp_namespace = "Protoc.Gateway";
+
+package api;
+
+import "google/protobuf/descriptor.proto";
+
+//{option(Method) = Get;}
+//{option(Resource) = "test";}
+
+extend google.protobuf.MethodOptions {
+    Methods method = 1024; // Метод для мапинга в api 
+    repeated string resource = 2048; // Ресурс для доступа к методу
+}
+
+extend google.protobuf.ServiceOptions {
+    repeated string service_resource = 2048; // Ресурсы для доступа к сервису
+}
+
+/*
+ * Перечисление с доступными http методами
+ */
+enum Methods {
+    GET = 0; // http get
+    POST = 1; // http post
+    PUT = 2; // http put
+    PATCH = 3; // http patch
+    DELETE = 4; // http delete
+    FILE = 5; // http file content 
+}
+
+// Чанк файла
+message FileChunk {
+    bytes chunk = 1; // Чанк размером 1024 (максимум)
+}
+
