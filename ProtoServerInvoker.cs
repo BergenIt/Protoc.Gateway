@@ -191,7 +191,7 @@ public class ProtoServerInvoker
 
         MethodInfo awaiter = typeof(AsyncUnaryCall<>)!.MakeGenericType(type).GetMethod("GetAwaiter")!;
         MethodInfo result = typeof(TaskAwaiter<>)!.MakeGenericType(type).GetMethod("GetResult")!;
-        
+
         MethodInfo metaAwaiter = typeof(Task<Metadata>)!.GetMethod("GetAwaiter")!;
         MethodInfo metaResult = typeof(TaskAwaiter<Metadata>)!.GetMethod("GetResult")!;
 
@@ -213,7 +213,7 @@ public class ProtoServerInvoker
         object? metaAwaiterObject = metaAwaiter.Invoke(metaCall, null);
         object? message = result.Invoke(responseAwaiterObject, null);
         Metadata? metadata = (Metadata?)metaResult.Invoke(metaAwaiterObject, null);
-        
+
         if (metadata is not null)
         {
             foreach (Metadata.Entry item in metadata)

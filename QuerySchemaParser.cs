@@ -51,7 +51,7 @@ public class QuerySchemaParser
                 string name = str1 + str2;
                 PropertyInfo property2 = contractType.GetProperty(name)!;
                 string str3 = property2.GetPropertyComment();
-              
+
                 if (!string.IsNullOrWhiteSpace(str3))
                 {
                     str3 = "." + str3;
