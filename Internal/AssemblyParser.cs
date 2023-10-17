@@ -40,7 +40,7 @@ internal class AssemblyParser : IAssemblyParser
                 bool isDuplexMethod = m.ReturnType.GenericTypeArguments.Length == 2
                     && m.ReturnType == typeof(AsyncDuplexStreamingCall<,>)
                         .MakeGenericType(
-                            m.ReturnType.GenericTypeArguments[0], 
+                            m.ReturnType.GenericTypeArguments[0],
                             m.ReturnType.GenericTypeArguments[1])
                     && m.GetParameters().Length == 3;
 
@@ -50,13 +50,13 @@ internal class AssemblyParser : IAssemblyParser
                 }
 
                 bool isNotUnaryCall = m.ReturnType != typeof(AsyncUnaryCall<>)
-                    .MakeGenericType(m.ReturnType.GenericTypeArguments[0]) 
+                    .MakeGenericType(m.ReturnType.GenericTypeArguments[0])
                     || m.GetParameters().Length != 2;
 
                 if (isNotUnaryCall)
                 {
                     return m.ReturnType == typeof(AsyncServerStreamingCall<>)
-                        .MakeGenericType(m.ReturnType.GenericTypeArguments[0]) 
+                        .MakeGenericType(m.ReturnType.GenericTypeArguments[0])
                         && m.GetParameters().Length == 2;
                 }
 
@@ -82,7 +82,7 @@ internal class AssemblyParser : IAssemblyParser
     {
         Type serviceType = methodInfo.DeclaringType?.DeclaringType
             ?? throw new InvalidOperationException(methodInfo.Name);
-        
+
         ServiceDescriptor? serviceDescriptor = GetServiceDescriptor(serviceType);
 
         MethodDescriptor? method = GetMethod(methodInfo, out methodName);
@@ -115,10 +115,10 @@ internal class AssemblyParser : IAssemblyParser
 
     private static ServiceDescriptor? GetServiceDescriptor(Type serviceType)
     {
-        PropertyInfo descriptorInfo = serviceType.GetProperty("Descriptor") 
+        PropertyInfo descriptorInfo = serviceType.GetProperty("Descriptor")
             ?? throw new InvalidOperationException(serviceType.Name);
-        
-        return (ServiceDescriptor?)descriptorInfo.GetValue(null) 
+
+        return (ServiceDescriptor?)descriptorInfo.GetValue(null)
             ?? throw new InvalidOperationException(serviceType.Name);
     }
 
@@ -134,9 +134,9 @@ internal class AssemblyParser : IAssemblyParser
 
         MethodInfo findMethodByName = property.PropertyType.GetMethod("FindMethodByName")
             ?? throw new InvalidOperationException(methodName);
-        
+
         return (MethodDescriptor?)findMethodByName.Invoke(
-            descriptor, 
+            descriptor,
             new object[1] { methodName });
     }
 }

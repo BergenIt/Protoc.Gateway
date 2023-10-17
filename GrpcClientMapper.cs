@@ -20,7 +20,7 @@ public static class GrpcClientMapper
         ImmutableArray<Type> assembyTypes = assemblies
             .SelectMany(a => a.GetTypes())
             .ToImmutableArray();
-        
+
         AssemblyParser implementationInstance = new(assembyTypes);
 
         builder.Services.AddSingleton<IAssemblyParser>(implementationInstance);
@@ -87,7 +87,7 @@ public static class GrpcClientMapper
 
                     string pattern = "protobuf/" + grpcClientType.DeclaringType?.Name + "/" + methodName;
 
-                    if (methods == Methods.File)
+                    if (methods is Methods.File)
                     {
                         methods = Methods.Get;
                     }
