@@ -48,6 +48,7 @@ internal class ClientDocumentFilter : IDocumentFilter
         foreach (Type grpcClientType in _assemblyParser.GrpcClientTypes)
         {
             IReadOnlyCollection<MethodInfo> grpcMethods = _assemblyParser.GetGrpcMethods(grpcClientType);
+            grpcClientType.GetDocumentation();
 
             string service = grpcClientType.DeclaringType?.Name
                 ?? throw new InvalidOperationException(grpcClientType.Name);
