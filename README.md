@@ -30,3 +30,31 @@ Runtime gateway library from grpc to rest.
 * Базис для `api-gw` решения
 * Для локальной отладки при разработке `grpc-сервисов` через `swagger`
 * Для автоматического тестирования `api` `grpc-сервисов`
+
+## А как этим пользоваться
+
+Устанавливаем [`nuget` пакет](https://www.nuget.org/packages/Protoc.Gateway)
+
+Добавляем `grpc-клиентов` в `di`:
+
+```csharp
+builder.AddGrpcClients(typeof(MyGrpcExampleService).Assembly);
+```
+
+Где `MyGrpcExampleService` - любой тип из ассамблеи, содержащей `grpc` сервисы.
+
+Добавляем `swagger`, собранный из этих этих `grpc-клиентов`:
+
+```csharp
+builder.Services.AddSwagger(builder.Configuration, typeof(MyGrpcExampleService).Assembly, true);
+```
+
+Где `MyGrpcExampleService` - любой тип из ассамблеи, содержащей `xml` документацию для сгенерированных `rpc`.
+
+Объявляем обработчиков для всех `rpc` и `swagger`:
+
+```csharp
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.yaml", "GrpcClients"));
+app.MapGrpcClients();
+```
