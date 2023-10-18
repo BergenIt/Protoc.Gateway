@@ -5,16 +5,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 using Newtonsoft.Json;
-
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
 
 using Type = System.Type;
 
-namespace Protoc.Gateway;
+namespace Protoc.Gateway.Internal;
 
-public class MessageBuilder : IMessageBuilder
+internal class MessageBuilder : IMessageBuilder
 {
     private readonly JsonSerializerSettings _settings;
 
@@ -49,7 +48,7 @@ public class MessageBuilder : IMessageBuilder
         object message = Activator.CreateInstance(messageType)
             ?? throw new InvalidOperationException(messageType.FullName);
 
-        foreach (KeyValuePair<string, StringValues> query in (IEnumerable<KeyValuePair<string, StringValues>>)queryCollection)
+        foreach (KeyValuePair<string, StringValues> query in queryCollection)
         {
             string[] queryKeys = query.Key.Split(".");
 
@@ -71,7 +70,7 @@ public class MessageBuilder : IMessageBuilder
                         {
                             Type genericArgument = property.PropertyType.GetGenericArguments()[0];
 
-                            foreach (var current in query.Value)
+                            foreach (string? current in query.Value)
                             {
                                 IList propertyValue = (IList?)property.GetValue(message)
                                     ?? throw new InvalidOperationException(property.PropertyType.FullName);

@@ -2,9 +2,9 @@
 
 using Type = System.Type;
 
-namespace Protoc.Gateway;
+namespace Protoc.Gateway.Internal;
 
-public interface IMessageBuilder
+internal interface IMessageBuilder
 {
     Task<object> BuildMessage(Type messageType, HttpContext httpContext);
 

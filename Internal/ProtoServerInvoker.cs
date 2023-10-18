@@ -13,9 +13,9 @@ using Microsoft.Net.Http.Headers;
 
 using Newtonsoft.Json.Linq;
 
-namespace Protoc.Gateway;
+namespace Protoc.Gateway.Internal;
 
-public class ProtoServerInvoker
+internal class ProtoServerInvoker
 {
     public sealed class StreamRequest<T>
     {
@@ -24,7 +24,7 @@ public class ProtoServerInvoker
 
     private readonly bool _basicMode;
 
-    private static readonly string[] s_ignoringMeta = new string[2] { "date", "server" };
+    private static readonly string[] s_ignoringMeta = new string[] { "date", "server" };
     private static readonly MethodInfo s_writeGrpcStreamMethodInfo = typeof(ProtoServerInvoker)!.GetMethod("WriteGrpcStream")!;
     private static readonly MethodInfo s_writeDuplexGrpcStreamMethodInfo = typeof(ProtoServerInvoker)!.GetMethod("WriteDuplexGrpcStream")!;
 
@@ -33,13 +33,13 @@ public class ProtoServerInvoker
     private readonly IMessageBuilder _messageBuilder;
     private readonly MethodInfo _methodInfo;
 
-    public ProtoServerInvoker(IMessageBuilder messageBuilder, object client, MethodInfo methodInfo, IEnumerable<string> resourses, bool basicMode)
+    public ProtoServerInvoker(IMessageBuilder messageBuilder, object client, MethodInfo methodInfo, IEnumerable<string> recourses, bool basicMode)
     {
         _basicMode = basicMode;
         _messageBuilder = messageBuilder;
         _client = client;
         _methodInfo = methodInfo;
-        _resourses = resourses;
+        _resourses = recourses;
     }
 
     public async Task Invoke(HttpContext httpContext)
@@ -80,7 +80,7 @@ public class ProtoServerInvoker
             Type? responseType = type;
             if (parameterType == typeof(Metadata))
             {
-                object? asyncDuplexStreamingCall = _methodInfo.Invoke(_client, new object?[3]
+                object? asyncDuplexStreamingCall = _methodInfo.Invoke(_client, new object?[]
                 {
                     callOptions.Headers,
                     null,
@@ -89,17 +89,19 @@ public class ProtoServerInvoker
 
                 parameterType = typeof(StreamRequest<>)!.MakeGenericType(_methodInfo.ReturnType.GenericTypeArguments[0]);
 
-                object obj = await _messageBuilder.BuildMessage(parameterType, httpContext);
+                object request = await _messageBuilder.BuildMessage(parameterType, httpContext);
 
                 await (Task)s_writeDuplexGrpcStreamMethodInfo
                     .MakeGenericMethod(_methodInfo.ReturnType.GenericTypeArguments[0], responseType)!
-                    .Invoke(null, new object?[3] { asyncDuplexStreamingCall, obj, httpContext })!;
+                    .Invoke(null, new object?[] { asyncDuplexStreamingCall, request, httpContext })!;
             }
             else
             {
-                object obj2 = await _messageBuilder.BuildMessage(parameterType, httpContext);
-                object? obj3 = _methodInfo.Invoke(_client, new object[2] { obj2, callOptions });
-                await (Task)s_writeGrpcStreamMethodInfo.MakeGenericMethod(responseType)!.Invoke(null, new object?[2] { obj3, httpContext })!;
+                object request = await _messageBuilder.BuildMessage(parameterType, httpContext);
+                object? streamValue = _methodInfo.Invoke(_client, new object[] { request, callOptions });
+
+                await (Task)s_writeGrpcStreamMethodInfo.MakeGenericMethod(responseType)!
+                    .Invoke(null, new object?[] { streamValue, httpContext })!;
             }
         }
         catch (Exception ex)
@@ -161,11 +163,13 @@ public class ProtoServerInvoker
         }
 
         httpContext.Response.Headers.ContentType = "application/json";
-        IAsyncEnumerable<TMessage> asyncEnumerable2 = asyncStreamReader.ReadAllAsync();
+
         JArray jArray = new();
-        await foreach (TMessage item4 in asyncEnumerable2)
+
+        await foreach (TMessage message in asyncStreamReader.ReadAllAsync())
         {
-            JObject item = JObject.FromObject(item4);
+            JObject item = JObject.FromObject(message);
+
             jArray.Add(item);
         }
 
@@ -179,8 +183,8 @@ public class ProtoServerInvoker
             }
         }
 
-        string text2 = jObject.ToString();
-        await httpContext.Response.WriteAsync(text2);
+        string jsonStr = jObject.ToString();
+        await httpContext.Response.WriteAsync(jsonStr);
     }
 
     private async Task UnaryCallHandle(HttpContext httpContent, object protoMessage, Type parameterType)
@@ -207,10 +211,11 @@ public class ProtoServerInvoker
             }
         }
 
-        object? unaryCall = _methodInfo.Invoke(_client, new object[2] { protoMessage, callOptions });
+        object? unaryCall = _methodInfo.Invoke(_client, new object[] { protoMessage, callOptions });
         object? metaCall = metaProperty.GetValue(unaryCall);
         object? responseAwaiterObject = awaiter.Invoke(unaryCall, null);
         object? metaAwaiterObject = metaAwaiter.Invoke(metaCall, null);
+
         object? message = result.Invoke(responseAwaiterObject, null);
         Metadata? metadata = (Metadata?)metaResult.Invoke(metaAwaiterObject, null);
 
@@ -228,8 +233,7 @@ public class ProtoServerInvoker
 
     private static string GetJwt(HttpContext context)
     {
-        string? text = (string?)context.Request.Headers[HeaderNames.Authorization];
-        text ??= string.Empty;
+        string text = (string?)context.Request.Headers[HeaderNames.Authorization] ?? string.Empty;
 
         return text.Replace("Bearer", string.Empty).Trim();
     }

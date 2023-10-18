@@ -1,18 +1,20 @@
-﻿using Google.Protobuf.WellKnownTypes;
+﻿using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
 
 using System.Reflection;
+using System.Globalization;
 
-using Type = System.Type;
-using Google.Protobuf.Collections;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
-using System.Globalization;
+
 using JsonConverter = Newtonsoft.Json.JsonConverter;
 
-namespace Protoc.Gateway;
+using Type = System.Type;
 
-public class ProtobufTimeResolver : DefaultContractResolver
+namespace Protoc.Gateway.Internal;
+
+internal class ProtobufTimeResolver : DefaultContractResolver
 {
     public ProtobufTimeResolver() => NamingStrategy = new CamelCaseNamingStrategy();
 
@@ -45,22 +47,18 @@ public class ProtobufTimeResolver : DefaultContractResolver
     {
         public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
-            Timestamp? timestamp = value as Timestamp;
-            timestamp ??= Timestamp.FromDateTime(DateTime.MinValue);
+            Timestamp timestamp = value as Timestamp ?? Timestamp.FromDateTime(DateTime.MinValue);
 
-            string str1 = timestamp.ToString();
-            string str2 = str1[1..^1];
-
-            writer.WriteValue(str2);
+            writer.WriteValue(timestamp.ToString()[1..^1]);
         }
 
-        public override object? ReadJson(
-          JsonReader reader,
-          Type objectType,
-          object? existingValue,
-          JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
-            return Timestamp.FromDateTime(DateTime.Parse(reader.Value?.ToString() ?? DateTime.MinValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture).ToUniversalTime());
+            string source = reader.Value?.ToString() ?? DateTime.MinValue.ToString(CultureInfo.InvariantCulture);
+
+            DateTime dateTimeValue = DateTime.Parse(source, CultureInfo.InvariantCulture);
+
+            return Timestamp.FromDateTime(dateTimeValue.ToUniversalTime());
         }
     }
 
@@ -72,11 +70,7 @@ public class ProtobufTimeResolver : DefaultContractResolver
             writer.WriteValue(duration.ToString());
         }
 
-        public override object? ReadJson(
-          JsonReader reader,
-          Type objectType,
-          object? existingValue,
-          JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             return Duration.FromTimeSpan(
                 TimeSpan.Parse(reader.Value?.ToString() ?? TimeSpan.MinValue.ToString(),
@@ -90,15 +84,16 @@ public class ProtobufTimeResolver : DefaultContractResolver
     {
         public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
-            Dictionary<TKey, DateTime> dictionary = ((MapField<TKey, Timestamp>?)value ?? new MapField<TKey, Timestamp>()).ToDictionary(k => k.Key, v => v.Value.ToDateTime());
+            MapField<TKey, Timestamp> mapFields = (MapField<TKey, Timestamp>?)value ?? new MapField<TKey, Timestamp>();
+
+            Dictionary<TKey, DateTime> dictionary = mapFields.ToDictionary(
+                k => k.Key,
+                v => v.Value.ToDateTime());
+
             serializer.Serialize(writer, dictionary);
         }
 
-        public override object? ReadJson(
-          JsonReader reader,
-          Type objectType,
-          object? existingValue,
-          JsonSerializer serializer) => null;
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer) => null;
 
         public override bool CanConvert(Type objectType) => objectType == typeof(MapField<TKey, Timestamp>) || objectType == typeof(TimeSpan);
     }
