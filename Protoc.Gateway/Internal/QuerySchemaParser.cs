@@ -13,19 +13,19 @@ internal class QuerySchemaParser
         List<OpenApiParameter> list = new();
 
         string typeComment = contractType.GetTypeComment();
-        
-        OpenApiSchema openApiSchema = repository.Schemas.GetValueOrDefault(contractType.FullName) 
+
+        OpenApiSchema openApiSchema = repository.Schemas.GetValueOrDefault(contractType.FullName)
             ?? throw new InvalidOperationException(contractType.FullName);
-        
+
         QueryParse(list, openApiSchema, contractType, repository, typeComment);
-        
+
         return list;
     }
 
     private static void QueryParse(List<OpenApiParameter> openApiParameters, OpenApiSchema openApiSchema, Type contractType, SchemaRepository repository, string comment, string? parentProppertyName = null)
     {
         OpenApiSchema? value;
-     
+
         if (openApiSchema.Type == "array" && openApiSchema.Items?.Reference != null)
         {
             if (repository.Schemas.TryGetValue(openApiSchema.Items.Reference.Id, out value))
@@ -45,9 +45,9 @@ internal class QuerySchemaParser
         foreach (KeyValuePair<string, OpenApiSchema> schemaProperty in openApiSchema.Properties)
         {
             string firstChar = char.ToUpperInvariant(schemaProperty.Key[0]).ToString();
-            
+
             string propertyKey = schemaProperty.Key;
-            
+
             string name = string.Concat(firstChar, propertyKey.AsSpan(1, propertyKey.Length - 1));
 
             PropertyInfo? property = contractType.GetProperty(name);
@@ -60,8 +60,8 @@ internal class QuerySchemaParser
             string fullName = parentProppertyName + schemaProperty.Key;
 
             OpenApiSchema? schemaPropertyValue = schemaProperty.Value;
-            
-            if (schemaProperty.Value.Type == null 
+
+            if (schemaProperty.Value.Type == null
                 && !repository.Schemas.TryGetValue(schemaProperty.Value.Reference.Id, out schemaPropertyValue))
             {
                 continue;
