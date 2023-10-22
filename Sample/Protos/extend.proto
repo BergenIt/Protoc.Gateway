@@ -1,0 +1,16 @@
+syntax = "proto3";
+package api;
+
+import "google/protobuf/descriptor.proto";
+import "methods.proto";
+
+option csharp_namespace = "Protoc.Gateway";
+
+extend google.protobuf.MethodOptions {
+    Methods method = 1024; // Метод для мапинга в api
+    repeated string resource = 2048; // Ресурс для доступа к методу
+}
+
+extend google.protobuf.ServiceOptions {
+    repeated string service_resource = 2048; // Ресурсы для доступа к сервису
+}
