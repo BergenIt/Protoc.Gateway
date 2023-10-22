@@ -97,7 +97,7 @@ internal class AssemblyParser : IAssemblyParser
             ?? new();
 
         resources.AddRange(method?
-            .GetOptions()
+            .GetOptions()?
             .GetExtension(new RepeatedExtension<MethodOptions, string>(
                 2048,
                 FieldCodec.ForString(

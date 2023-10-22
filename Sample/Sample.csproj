@@ -4,10 +4,11 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf ProtoRoot="Protos" Include="Protos/*.proto" Exclude="Protos/tmethods.proto" GrpcServices="All" />
+    <Protobuf ProtoRoot="Protos" Include="Protos/*.proto" Exclude="Protos/api.proto" GrpcServices="All" />
   </ItemGroup>
 
   <ItemGroup>

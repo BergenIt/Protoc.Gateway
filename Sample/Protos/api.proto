@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-option go_package = "protoc/gateway";
 option csharp_namespace = "Protoc.Gateway";
 
 package api;
@@ -11,16 +10,16 @@ import "google/protobuf/descriptor.proto";
 //{option(Resource) = "test";}
 
 extend google.protobuf.MethodOptions {
-    Methods method = 1024; // РњРµС‚РѕРґ РґР»СЏ РјР°РїРёРЅРіР° РІ api 
-    repeated string resource = 2048; // Р РµСЃСѓСЂСЃ РґР»СЏ РґРѕСЃС‚СѓРїР° Рє РјРµС‚РѕРґСѓ
+    Methods method = 1024; // Метод для мапинга в api 
+    repeated string resource = 2048; // Ресурс для доступа к методу
 }
 
 extend google.protobuf.ServiceOptions {
-    repeated string service_resource = 2048; // Р РµСЃСѓСЂСЃС‹ РґР»СЏ РґРѕСЃС‚СѓРїР° Рє СЃРµСЂРІРёСЃСѓ
+    repeated string service_resource = 2048; // Ресурсы для доступа к сервису
 }
 
 /*
- * РџРµСЂРµС‡РёСЃР»РµРЅРёРµ СЃ РґРѕСЃС‚СѓРїРЅС‹РјРё http РјРµС‚РѕРґР°РјРё
+ * Перечисление с доступными http методами
  */
 enum Methods {
     GET = 0; // http get
@@ -31,8 +30,7 @@ enum Methods {
     FILE = 5; // http file content 
 }
 
-// Р§Р°РЅРє С„Р°Р№Р»Р°
+// Чанк файла
 message FileChunk {
-    bytes chunk = 1; // Р§Р°РЅРє СЂР°Р·РјРµСЂРѕРј 1024 (РјР°РєСЃРёРјСѓРј)
+    bytes chunk = 1; // Чанк размером 1024 (максимум)
 }
-

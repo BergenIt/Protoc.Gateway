@@ -4,12 +4,13 @@ option csharp_namespace = "Sample";
 
 package greet;
 
-import "extend.proto";
+import "api.proto";
 
 // The greeting service definition.
 service Greeter {
   // Sends a greeting
   rpc SayHello (HelloRequest) returns (HelloReply) {option(api.method) = GET;}
+  rpc SayHelloDefault (HelloRequest) returns (HelloReply);
 }
 
 // The request message containing the user's name.
