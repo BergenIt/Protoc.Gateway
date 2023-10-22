@@ -1,4 +1,4 @@
-﻿using Grpc.Net.ClientFactory;
+using Grpc.Net.ClientFactory;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

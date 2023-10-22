@@ -1,4 +1,4 @@
-﻿using Google.Protobuf.Reflection;
+using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using Google.Protobuf;
 using Grpc.Core;
