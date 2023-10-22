@@ -1,28 +1,35 @@
-using System.Reflection;
-
 using Microsoft.OpenApi.Models;
 
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Protoc.Gateway.Internal;
 
-public class QuerySchemaParser
+internal class QuerySchemaParser
 {
     public static IList<OpenApiParameter> GetRequestQuerySchema(Type contractType, SchemaRepository repository)
     {
         List<OpenApiParameter> list = new();
+
         string typeComment = contractType.GetTypeComment();
-        OpenApiSchema openApiSchema = repository.Schemas.GetValueOrDefault(contractType.FullName) ?? throw new InvalidOperationException(contractType.FullName);
-        QueryParse(list, openApiSchema, contractType, repository, typeComment);
+
+        OpenApiSchema openApiSchema = repository.Schemas.GetValueOrDefault(contractType.FullName)
+            ?? throw new InvalidOperationException(contractType.FullName);
+
+        QueryParse(
+            list,
+            openApiSchema,
+            contractType,
+            repository,
+            typeComment);
+
         return list;
     }
 
     private static void QueryParse(List<OpenApiParameter> openApiParameters, OpenApiSchema openApiSchema, Type contractType, SchemaRepository repository, string comment, string? parentProppertyName = null)
     {
-        OpenApiSchema value;
-        if (openApiSchema.Type == "Array".ToLowerInvariant() && openApiSchema.Items?.Reference != null)
+        if (openApiSchema.Type == "array" && openApiSchema.Items?.Reference != null)
         {
-            if (repository.Schemas.TryGetValue(openApiSchema.Items.Reference.Id, out value))
+            if (repository.Schemas.TryGetValue(openApiSchema.Items.Reference.Id, out _))
             {
                 openApiParameters.Add(new OpenApiParameter
                 {
@@ -36,52 +43,64 @@ public class QuerySchemaParser
             return;
         }
 
-        foreach (KeyValuePair<string, OpenApiSchema> property2 in openApiSchema.Properties)
+        foreach (KeyValuePair<string, OpenApiSchema> propKv in openApiSchema.Properties)
         {
-            string text = char.ToUpperInvariant(property2.Key[0]).ToString();
-            string key = property2.Key;
-            string name = text + key.Substring(1, key.Length - 1);
-            PropertyInfo property = contractType.GetProperty(name);
-            string text2 = property.GetPropertyComment();
-            if (!string.IsNullOrWhiteSpace(text2))
+            string key = propKv.Key;
+
+            string name = char.ToUpperInvariant(key[0]) + key[1..];
+
+            string? description = contractType
+                .GetProperty(name)?
+                .GetPropertyComment();
+
+            if (!string.IsNullOrWhiteSpace(description))
             {
-                text2 = "." + text2;
+                description = "." + description;
             }
 
-            string text3 = parentProppertyName + property2.Key;
-            OpenApiSchema value2 = property2.Value;
-            if (property2.Value.Type == null && !repository.Schemas.TryGetValue(property2.Value.Reference.Id, out value2))
+            OpenApiSchema? schema = propKv.Value;
+
+            if (propKv.Value.Type == null && !repository.Schemas.TryGetValue(propKv.Value.Reference.Id, out schema))
             {
                 continue;
             }
 
-            if (property2.Value.Type == "Array".ToLowerInvariant() && property2.Value.Items?.Reference != null)
+            if (propKv.Value.Type == "array" && propKv.Value.Items?.Reference is not null)
             {
-                if (repository.Schemas.TryGetValue(property2.Value.Items.Reference.Id, out value))
+                if (repository.Schemas.TryGetValue(propKv.Value.Items.Reference.Id, out _))
                 {
                     openApiParameters.Add(new OpenApiParameter
                     {
                         In = ParameterLocation.Query,
-                        Schema = value2,
-                        Description = comment + text2,
-                        Name = text3
+                        Schema = schema,
+                        Description = comment + description,
+                        Name = parentProppertyName + propKv.Key
                     });
                 }
+
+                return;
             }
-            else if (value2.Type == "Object".ToLowerInvariant())
+
+            if (schema.Type == "object" && contractType.GetProperty(name)?.PropertyType is Type propertyType)
             {
-                QueryParse(openApiParameters, value2, property.PropertyType, repository, comment + text2, text3 + ".");
+                QueryParse(
+                    openApiParameters,
+                    schema,
+                    propertyType,
+                    repository,
+                    comment + description,
+                    parentProppertyName + propKv.Key + ".");
+
+                return;
             }
-            else
+
+            openApiParameters.Add(new OpenApiParameter
             {
-                openApiParameters.Add(new OpenApiParameter
-                {
-                    In = ParameterLocation.Query,
-                    Schema = value2,
-                    Description = comment + text2,
-                    Name = text3
-                });
-            }
+                In = ParameterLocation.Query,
+                Schema = schema,
+                Description = comment + description,
+                Name = parentProppertyName + propKv.Key
+            });
         }
     }
 }

@@ -1,16 +1,12 @@
+using System.Collections.Immutable;
+using System.Reflection;
 using Grpc.Net.ClientFactory;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 using Protoc.Gateway.Internal;
-
-using System.Collections.Immutable;
-using System.Reflection;
-
 using Type = System.Type;
 
 namespace Protoc.Gateway;

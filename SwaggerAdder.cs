@@ -1,14 +1,13 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Microsoft.Extensions.Configuration;
-
 using System.Reflection;
-using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
-using System.Text.Json.Serialization;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Protoc.Gateway.Internal;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Protoc.Gateway;
 

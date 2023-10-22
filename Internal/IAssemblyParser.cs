@@ -1,6 +1,5 @@
-﻿using Google.Protobuf.Reflection;
-
 using System.Reflection;
+using Google.Protobuf.Reflection;
 
 namespace Protoc.Gateway.Internal;
 

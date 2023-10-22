@@ -1,14 +1,12 @@
+using System.Reflection;
+using Google.Protobuf;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
-using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Configuration;
-
-using System.Reflection;
-
-using Type = System.Type;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Type = System.Type;
 
 namespace Protoc.Gateway.Internal;
 

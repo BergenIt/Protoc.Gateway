@@ -1,8 +1,7 @@
-﻿using System.Reflection;
-
-using Type = System.Type;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
+using Type = System.Type;
 
 namespace Protoc.Gateway;
 
@@ -31,8 +30,8 @@ internal static class XmlDocsGetter
             .ToStringAndClear()
             .Replace('+', '.');
 
-        string comment = s_loadedXmlDocumentation.TryGetValue(key, out string? docs) 
-            ? docs.TrimValue() 
+        string comment = s_loadedXmlDocumentation.TryGetValue(key, out string? docs)
+            ? docs.TrimValue()
             : string.Empty;
 
         return comment;
@@ -69,7 +68,7 @@ internal static class XmlDocsGetter
         summary = summary
             .Split("</summary>", StringSplitOptions.RemoveEmptyEntries)
             .FirstOrDefault() ?? string.Empty;
-        
+
         return summary.Trim('\n').Trim('\t').Trim();
     }
 

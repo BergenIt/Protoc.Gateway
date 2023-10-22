@@ -1,9 +1,9 @@
-﻿using Google.Protobuf.Collections;
-using Google.Protobuf.Reflection;
-using Google.Protobuf;
-using System.Reflection;
-using Grpc.Core;
 using System.Collections.Immutable;
+using System.Reflection;
+using Google.Protobuf;
+using Google.Protobuf.Collections;
+using Google.Protobuf.Reflection;
+using Grpc.Core;
 
 namespace Protoc.Gateway.Internal;
 

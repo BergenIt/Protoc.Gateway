@@ -1,15 +1,11 @@
-﻿using Google.Protobuf.Collections;
-using Google.Protobuf.WellKnownTypes;
-
-using System.Reflection;
 using System.Globalization;
-
+using System.Reflection;
+using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
-
 using JsonConverter = Newtonsoft.Json.JsonConverter;
-
 using Type = System.Type;
 
 namespace Protoc.Gateway.Internal;

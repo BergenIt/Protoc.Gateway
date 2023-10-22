@@ -1,15 +1,11 @@
-﻿using Google.Protobuf.Collections;
-using Google.Protobuf.WellKnownTypes;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-
-using Newtonsoft.Json;
-
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
-
+using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using Type = System.Type;
 
 namespace Protoc.Gateway.Internal;
