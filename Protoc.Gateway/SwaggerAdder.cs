@@ -35,7 +35,11 @@ public static class SwaggerAdder
             if (executingAssembly is not null)
             {
                 string filePath = Path.Combine(AppContext.BaseDirectory, executingAssembly.GetName().Name + ".xml");
-                a.IncludeXmlComments(filePath);
+
+                if (File.Exists(filePath))
+                {
+                    a.IncludeXmlComments(filePath);
+                }
             }
             OpenApiSecurityScheme securityScheme = new()
             {
