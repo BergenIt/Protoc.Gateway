@@ -4,10 +4,10 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	<RootNamespace>Protoc.Gateway</RootNamespace>
+	  <RootNamespace>Protoc.Gateway</RootNamespace>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>0.0.1-rc8</Version>
+    <Version>0.0.1</Version>
     <RepositoryUrl>https://github.com/BergenIt/Protoc.Gateway</RepositoryUrl>
   </PropertyGroup>
 
