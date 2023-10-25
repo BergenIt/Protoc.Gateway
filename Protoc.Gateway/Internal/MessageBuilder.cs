@@ -49,9 +49,11 @@ internal class MessageBuilder : IMessageBuilder
         {
             string[] queryKeys = query.Key.Split(".");
 
+            object innerObject = message;
+
             for (int index = 0; index < queryKeys.Length; ++index)
             {
-                Type type = message.GetType();
+                Type type = innerObject.GetType();
 
                 string queryKey = queryKeys[index];
 
@@ -69,7 +71,7 @@ internal class MessageBuilder : IMessageBuilder
 
                             foreach (string? current in query.Value)
                             {
-                                IList propertyValue = (IList?)property.GetValue(message)
+                                IList propertyValue = (IList?)property.GetValue(innerObject)
                                     ?? throw new InvalidOperationException(property.PropertyType.FullName);
 
                                 object? value = ParseString(genericArgument, current ?? string.Empty);
@@ -82,23 +84,23 @@ internal class MessageBuilder : IMessageBuilder
                         {
                             string stringValue = query.Value.ToString();
                             object? value = ParseString(property.PropertyType, stringValue);
-                            property.SetValue(message, value);
+                            property.SetValue(innerObject, value);
                             break;
                         }
                     }
                     else
                     {
-                        object? value = property.GetValue(message);
+                        object? value = property.GetValue(innerObject);
 
                         if (value is null)
                         {
                             value = Activator.CreateInstance(property.PropertyType)
                                 ?? throw new InvalidOperationException(property.PropertyType.FullName);
 
-                            property.SetValue(message, value);
+                            property.SetValue(innerObject, value);
                         }
 
-                        message = value;
+                        innerObject = value;
                     }
                 }
             }

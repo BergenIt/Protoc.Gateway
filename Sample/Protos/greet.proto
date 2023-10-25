@@ -20,6 +20,12 @@ message HelloRequest {
   
   // example repeated objects
   repeated RepeatedObject values = 2;
+  SingleObject object = 3;
+}
+
+message SingleObject {
+	int32 value = 1;
+	string valueStr = 2;
 }
 
 // example repeated objects
